@@ -113,12 +113,18 @@ func _test_enemy_damage_and_death_signal() -> void:
 	var enemy = enemy_scene.instantiate()
 	root.add_child(enemy)
 	var deaths := [0]
-	enemy.died.connect(func(_enemy: Node) -> void: deaths[0] += 1)
+	var death_payloads: Array[Node] = []
+	enemy.died.connect(func(dead_enemy: Node) -> void:
+		deaths[0] += 1
+		death_payloads.append(dead_enemy)
+	)
 	enemy.health = 1
 	enemy.take_damage(1)
 	enemy.take_damage(1)
 	if deaths[0] != 1:
 		failures.append("Enemy death signal expected once, got %s" % deaths[0])
+	if death_payloads.size() != 1 or death_payloads[0] != enemy:
+		failures.append("Enemy death signal payload should be enemy instance, got %s" % death_payloads)
 	enemy.queue_free()
 	await process_frame
 
