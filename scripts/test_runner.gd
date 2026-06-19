@@ -9,6 +9,8 @@ func _init() -> void:
 	_check_project_has_main_scene()
 	await _test_player_clamps_to_arena()
 	await _test_player_damage_uses_invulnerability()
+	await _test_enemy_moves_toward_player()
+	await _test_enemy_damage_and_death_signal()
 	_finish()
 
 func _check_file_exists(path: String) -> void:
@@ -54,6 +56,41 @@ func _test_player_damage_uses_invulnerability() -> void:
 	if player.health != 2:
 		failures.append("Player should ignore damage during invulnerability, got health %s" % player.health)
 	player.queue_free()
+	await process_frame
+
+func _test_enemy_moves_toward_player() -> void:
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if enemy_scene == null:
+		failures.append("Cannot load enemy scene")
+		return
+	var enemy = enemy_scene.instantiate()
+	root.add_child(enemy)
+	enemy.global_position = Vector2.ZERO
+	enemy.target = Node2D.new()
+	root.add_child(enemy.target)
+	enemy.target.global_position = Vector2(100, 0)
+	enemy.update_chase(1.0)
+	if enemy.velocity.x <= 0:
+		failures.append("Enemy should move toward positive X, velocity was %s" % enemy.velocity)
+	enemy.target.queue_free()
+	enemy.queue_free()
+	await process_frame
+
+func _test_enemy_damage_and_death_signal() -> void:
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if enemy_scene == null:
+		failures.append("Cannot load enemy scene")
+		return
+	var enemy = enemy_scene.instantiate()
+	root.add_child(enemy)
+	var deaths := [0]
+	enemy.died.connect(func(_enemy: Node) -> void: deaths[0] += 1)
+	enemy.health = 1
+	enemy.take_damage(1)
+	enemy.take_damage(1)
+	if deaths[0] != 1:
+		failures.append("Enemy death signal expected once, got %s" % deaths[0])
+	enemy.queue_free()
 	await process_frame
 
 func _finish() -> void:
