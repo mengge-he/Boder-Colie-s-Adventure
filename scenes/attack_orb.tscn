@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://attack_orb_scene"]
+
+[ext_resource type="Script" path="res://scripts/attack_orb.gd" id="1_orb"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_orb"]
+radius = 8.0
+
+[node name="AttackOrb" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_orb")
+
+[node name="Glow" type="Polygon2D" parent="."]
+color = Color(1, 0.82, 0.26, 1)
+polygon = PackedVector2Array(9, 0, 4, 7, -4, 7, -9, 0, -4, -7, 4, -7)
+
+[node name="Tail" type="Polygon2D" parent="."]
+position = Vector2(-10, 0)
+color = Color(1, 0.92, 0.45, 0.45)
+polygon = PackedVector2Array(0, -4, -18, 0, 0, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_orb")
+
+[node name="LifeTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="LifeTimer" to="." method="_on_life_timer_timeout"]

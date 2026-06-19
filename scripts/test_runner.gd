@@ -22,6 +22,8 @@ func _init() -> void:
 	await _test_enemy_moves_toward_player()
 	await _test_enemy_reapplies_contact_damage_after_cooldown()
 	await _test_enemy_damage_and_death_signal()
+	await _test_attack_controller_selects_nearest_enemy()
+	await _test_attack_orb_hits_target()
 	_finish()
 
 func _check_file_exists(path: String) -> void:
@@ -126,6 +128,53 @@ func _test_enemy_damage_and_death_signal() -> void:
 	if death_payloads.size() != 1 or death_payloads[0] != enemy:
 		failures.append("Enemy death signal payload should be enemy instance, got %s" % death_payloads)
 	enemy.queue_free()
+	await process_frame
+
+func _test_attack_controller_selects_nearest_enemy() -> void:
+	var controller_script = load("res://scripts/attack_controller.gd")
+	if controller_script == null:
+		failures.append("Cannot load attack_controller.gd")
+		return
+	var controller = Node2D.new()
+	controller.set_script(controller_script)
+	root.add_child(controller)
+	var far_enemy = Node2D.new()
+	var near_enemy = Node2D.new()
+	root.add_child(far_enemy)
+	root.add_child(near_enemy)
+	far_enemy.add_to_group("enemies")
+	near_enemy.add_to_group("enemies")
+	controller.global_position = Vector2.ZERO
+	far_enemy.global_position = Vector2(300, 0)
+	near_enemy.global_position = Vector2(40, 0)
+	var selected = controller.find_nearest_enemy()
+	if selected != near_enemy:
+		failures.append("AttackController should select nearest enemy")
+	controller.queue_free()
+	far_enemy.queue_free()
+	near_enemy.queue_free()
+	await process_frame
+
+func _test_attack_orb_hits_target() -> void:
+	var orb_scene = load("res://scenes/attack_orb.tscn")
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if orb_scene == null or enemy_scene == null:
+		failures.append("Cannot load orb or enemy scene")
+		return
+	var orb = orb_scene.instantiate()
+	var enemy = enemy_scene.instantiate()
+	root.add_child(orb)
+	root.add_child(enemy)
+	orb.global_position = Vector2.ZERO
+	enemy.global_position = Vector2(2, 0)
+	enemy.health = 1
+	orb.set_target(enemy)
+	orb.apply_hit_if_close()
+	if is_instance_valid(enemy) and enemy.health > 0:
+		failures.append("AttackOrb should damage close target")
+	orb.queue_free()
+	if is_instance_valid(enemy):
+		enemy.queue_free()
 	await process_frame
 
 func _finish() -> void:
