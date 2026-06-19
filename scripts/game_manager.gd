@@ -16,6 +16,7 @@ func _ready() -> void:
 	if player != null:
 		player.health_changed.connect(on_player_health_changed)
 		player.died.connect(on_player_died)
+		on_player_health_changed(player.health, player.max_health)
 	var hud := get_node_or_null(hud_path)
 	if hud != null:
 		hud.set_kills(kills)
@@ -68,6 +69,8 @@ func _stop_match(message: String) -> void:
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED
 	var player := get_node_or_null(player_path)
 	if player != null:
+		if player.has_method("stop_control"):
+			player.stop_control()
 		var attack_controller := player.get_node_or_null("Hand/AttackController")
 		if attack_controller != null and attack_controller.has_method("stop_attacks"):
 			attack_controller.stop_attacks()

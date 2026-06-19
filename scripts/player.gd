@@ -11,22 +11,31 @@ signal died
 
 var health: int = max_health
 var invulnerable: bool = false
+var controls_enabled: bool = true
 
 @onready var body: Polygon2D = $Body
 @onready var invulnerability_timer: Timer = $InvulnerabilityTimer
 
 func _ready() -> void:
 	health = max_health
+	controls_enabled = true
 	invulnerability_timer.wait_time = invulnerability_time
 	health_changed.emit(health, max_health)
 
 func _physics_process(_delta: float) -> void:
+	if not controls_enabled:
+		velocity = Vector2.ZERO
+		return
 	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_vector * speed
 	move_and_slide()
 	clamp_to_arena()
 	if input_vector.length() > 0.01:
 		body.scale.x = -1.0 if input_vector.x < -0.01 else 1.0
+
+func stop_control() -> void:
+	controls_enabled = false
+	velocity = Vector2.ZERO
 
 func clamp_to_arena() -> void:
 	global_position = global_position.clamp(arena_rect.position, arena_rect.position + arena_rect.size)
