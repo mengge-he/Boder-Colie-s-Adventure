@@ -18,6 +18,7 @@ var overlapping_damage_bodies: Array[Node2D] = []
 @onready var contact_timer: Timer = $ContactTimer
 
 func _ready() -> void:
+	add_to_group("enemies")
 	health = max_health
 	contact_timer.wait_time = contact_cooldown
 

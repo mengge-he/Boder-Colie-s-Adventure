@@ -23,6 +23,7 @@ func _init() -> void:
 	await _test_enemy_reapplies_contact_damage_after_cooldown()
 	await _test_enemy_damage_and_death_signal()
 	await _test_attack_controller_selects_nearest_enemy()
+	await _test_attack_controller_targets_real_enemy_scene()
 	await _test_attack_orb_hits_target()
 	_finish()
 
@@ -153,6 +154,27 @@ func _test_attack_controller_selects_nearest_enemy() -> void:
 	controller.queue_free()
 	far_enemy.queue_free()
 	near_enemy.queue_free()
+	await process_frame
+
+func _test_attack_controller_targets_real_enemy_scene() -> void:
+	var controller_script = load("res://scripts/attack_controller.gd")
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if controller_script == null or enemy_scene == null:
+		failures.append("Cannot load attack controller script or enemy scene")
+		return
+	var controller = Node2D.new()
+	controller.set_script(controller_script)
+	var enemy = enemy_scene.instantiate()
+	root.add_child(controller)
+	root.add_child(enemy)
+	controller.global_position = Vector2.ZERO
+	enemy.global_position = Vector2(40, 0)
+	await process_frame
+	var selected = controller.find_nearest_enemy()
+	if selected != enemy:
+		failures.append("AttackController should target real enemy scene without manual grouping")
+	controller.queue_free()
+	enemy.queue_free()
 	await process_frame
 
 func _test_attack_orb_hits_target() -> void:
