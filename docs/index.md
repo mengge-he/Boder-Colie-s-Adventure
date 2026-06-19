@@ -11,3 +11,4 @@
 ## 开发验收
 
 - [验收标准](development/acceptance-standard)
+- [测试入口](../scripts/test_runner.gd)
