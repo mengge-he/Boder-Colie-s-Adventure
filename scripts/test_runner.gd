@@ -25,6 +25,7 @@ func _init() -> void:
 	await _test_attack_controller_selects_nearest_enemy()
 	await _test_attack_controller_targets_real_enemy_scene()
 	await _test_attack_orb_hits_target()
+	await _test_spawner_interval_decreases_over_time()
 	_finish()
 
 func _check_file_exists(path: String) -> void:
@@ -197,6 +198,21 @@ func _test_attack_orb_hits_target() -> void:
 	orb.queue_free()
 	if is_instance_valid(enemy):
 		enemy.queue_free()
+	await process_frame
+
+func _test_spawner_interval_decreases_over_time() -> void:
+	var spawner_script = load("res://scripts/spawner.gd")
+	if spawner_script == null:
+		failures.append("Cannot load spawner.gd")
+		return
+	var spawner := Node2D.new()
+	spawner.set_script(spawner_script)
+	root.add_child(spawner)
+	var early: float = spawner.get_spawn_interval(0.0)
+	var late: float = spawner.get_spawn_interval(60.0)
+	if late >= early:
+		failures.append("Spawner interval should decrease over time, early %s late %s" % [early, late])
+	spawner.queue_free()
 	await process_frame
 
 func _finish() -> void:
