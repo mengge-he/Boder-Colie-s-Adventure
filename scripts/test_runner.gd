@@ -27,6 +27,7 @@ func _init() -> void:
 	await _test_attack_orb_hits_target()
 	await _test_spawner_interval_decreases_over_time()
 	await _test_game_manager_win_and_loss_states()
+	await _test_game_manager_stop_prevents_new_orbs()
 	await _test_hud_updates_labels()
 	_finish()
 
@@ -234,6 +235,55 @@ func _test_game_manager_win_and_loss_states() -> void:
 	if manager.game_state != "lost":
 		failures.append("GameManager should enter lost state when player dies")
 	manager.queue_free()
+	await process_frame
+
+func _test_game_manager_stop_prevents_new_orbs() -> void:
+	await _assert_stopped_match_prevents_new_orbs("won")
+	await _assert_stopped_match_prevents_new_orbs("lost")
+
+func _assert_stopped_match_prevents_new_orbs(end_state: String) -> void:
+	var main_scene = load("res://scenes/main.tscn")
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if main_scene == null or enemy_scene == null:
+		failures.append("Cannot load main or enemy scene")
+		return
+	var main = main_scene.instantiate()
+	root.add_child(main)
+	current_scene = main
+	await process_frame
+	var player = main.get_node_or_null("Player")
+	var manager = main.get_node_or_null("GameManager")
+	if player == null or manager == null:
+		failures.append("Main scene should provide Player and GameManager")
+		main.queue_free()
+		current_scene = null
+		await process_frame
+		return
+	var controller = player.get_node_or_null("Hand/AttackController")
+	if controller == null:
+		failures.append("Player should provide AttackController")
+		main.queue_free()
+		current_scene = null
+		await process_frame
+		return
+	var enemy = enemy_scene.instantiate()
+	main.add_child(enemy)
+	enemy.global_position = player.global_position + Vector2(40, 0)
+	enemy.target = player
+	await process_frame
+	if end_state == "won":
+		manager.win_game()
+	else:
+		manager.on_player_died()
+	await process_frame
+	var orbs_before: int = get_nodes_in_group("orbs").size()
+	controller.fire_at_nearest_enemy()
+	await process_frame
+	var orbs_after: int = get_nodes_in_group("orbs").size()
+	if orbs_after != orbs_before:
+		failures.append("GameManager stop should prevent new AttackOrb creation after %s match end" % end_state)
+	main.queue_free()
+	current_scene = null
 	await process_frame
 
 func _test_hud_updates_labels() -> void:

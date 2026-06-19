@@ -66,6 +66,11 @@ func _stop_match(message: String) -> void:
 	var spawner := get_node_or_null(spawner_path)
 	if spawner != null:
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED
+	var player := get_node_or_null(player_path)
+	if player != null:
+		var attack_controller := player.get_node_or_null("Hand/AttackController")
+		if attack_controller != null and attack_controller.has_method("stop_attacks"):
+			attack_controller.stop_attacks()
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		enemy.process_mode = Node.PROCESS_MODE_DISABLED
 	for orb in get_tree().get_nodes_in_group("orbs"):

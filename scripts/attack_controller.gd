@@ -5,13 +5,16 @@ extends Node2D
 @export var attack_interval: float = 0.65
 @export var target_range: float = 520.0
 
+var attacks_enabled: bool = true
+
 @onready var attack_timer: Timer = get_node_or_null("AttackTimer") as Timer
 
 func _ready() -> void:
 	if attack_timer == null:
 		return
 	attack_timer.wait_time = attack_interval
-	attack_timer.start()
+	if attacks_enabled:
+		attack_timer.start()
 
 func find_nearest_enemy() -> Node2D:
 	var nearest: Node2D = null
@@ -27,6 +30,8 @@ func find_nearest_enemy() -> Node2D:
 	return nearest
 
 func fire_at_nearest_enemy() -> void:
+	if not attacks_enabled:
+		return
 	if orb_scene == null:
 		return
 	var target := find_nearest_enemy()
@@ -42,3 +47,8 @@ func fire_at_nearest_enemy() -> void:
 
 func _on_attack_timer_timeout() -> void:
 	fire_at_nearest_enemy()
+
+func stop_attacks() -> void:
+	attacks_enabled = false
+	if attack_timer != null:
+		attack_timer.stop()
