@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://main_survival_scene"]
+[gd_scene load_steps=6 format=3 uid="uid://main_survival_scene"]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" path="res://scripts/spawner.gd" id="3_spawner"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_game_manager"]
 
 [node name="Main" type="Node2D"]
 
@@ -20,5 +22,13 @@ enemy_scene = ExtResource("2_enemy")
 player_path = NodePath("../Player")
 
 [node name="SpawnTimer" type="Timer" parent="Spawner"]
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("5_game_manager")
+player_path = NodePath("../Player")
+hud_path = NodePath("../HUD")
+spawner_path = NodePath("../Spawner")
 
 [connection signal="timeout" from="Spawner/SpawnTimer" to="Spawner" method="_on_spawn_timer_timeout"]

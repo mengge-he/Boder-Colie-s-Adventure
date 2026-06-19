@@ -26,6 +26,8 @@ func _init() -> void:
 	await _test_attack_controller_targets_real_enemy_scene()
 	await _test_attack_orb_hits_target()
 	await _test_spawner_interval_decreases_over_time()
+	await _test_game_manager_win_and_loss_states()
+	await _test_hud_updates_labels()
 	_finish()
 
 func _check_file_exists(path: String) -> void:
@@ -213,6 +215,44 @@ func _test_spawner_interval_decreases_over_time() -> void:
 	if late >= early:
 		failures.append("Spawner interval should decrease over time, early %s late %s" % [early, late])
 	spawner.queue_free()
+	await process_frame
+
+func _test_game_manager_win_and_loss_states() -> void:
+	var manager_script = load("res://scripts/game_manager.gd")
+	if manager_script == null:
+		failures.append("Cannot load game_manager.gd")
+		return
+	var manager := Node.new()
+	manager.set_script(manager_script)
+	root.add_child(manager)
+	manager.remaining_time = 0.0
+	manager.evaluate_timer()
+	if manager.game_state != "won":
+		failures.append("GameManager should enter won state when timer reaches zero")
+	manager.start_game()
+	manager.on_player_died()
+	if manager.game_state != "lost":
+		failures.append("GameManager should enter lost state when player dies")
+	manager.queue_free()
+	await process_frame
+
+func _test_hud_updates_labels() -> void:
+	var hud_scene = load("res://scenes/hud.tscn")
+	if hud_scene == null:
+		failures.append("Cannot load hud scene")
+		return
+	var hud = hud_scene.instantiate()
+	root.add_child(hud)
+	hud.set_time(42.8)
+	hud.set_health(2, 5)
+	hud.set_kills(7)
+	if hud.get_node("TimeLabel").text != "Time 43":
+		failures.append("HUD time label did not update")
+	if hud.get_node("HealthLabel").text != "HP 2/5":
+		failures.append("HUD health label did not update")
+	if hud.get_node("KillsLabel").text != "Kills 7":
+		failures.append("HUD kills label did not update")
+	hud.queue_free()
 	await process_frame
 
 func _finish() -> void:

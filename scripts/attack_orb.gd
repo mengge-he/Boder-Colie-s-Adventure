@@ -11,6 +11,7 @@ var target: Node2D
 @onready var life_timer: Timer = $LifeTimer
 
 func _ready() -> void:
+	add_to_group("orbs")
 	life_timer.wait_time = lifetime
 	life_timer.start()
 

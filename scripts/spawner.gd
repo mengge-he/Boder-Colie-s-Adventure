@@ -34,6 +34,9 @@ func spawn_enemy() -> void:
 	enemy.global_position = _pick_edge_position()
 	enemy.target = player
 	enemy.add_to_group("enemies")
+	var manager := get_tree().current_scene.get_node_or_null("GameManager")
+	if manager != null and enemy.has_signal("died"):
+		enemy.died.connect(manager.on_enemy_died)
 
 func _pick_edge_position() -> Vector2:
 	var side := randi() % 4

@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://hud_scene"]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="TimeLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 14.0
+offset_right = 160.0
+offset_bottom = 46.0
+text = "Time 120"
+
+[node name="HealthLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 160.0
+offset_bottom = 80.0
+text = "HP 5/5"
+
+[node name="KillsLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 82.0
+offset_right = 160.0
+offset_bottom = 114.0
+text = "Kills 0"
+
+[node name="MessageLabel" type="Label" parent="."]
+visible = false
+horizontal_alignment = 1
+vertical_alignment = 1
+offset_left = 120.0
+offset_top = 390.0
+offset_right = 420.0
+offset_bottom = 530.0
+text = "Survived!\nPress R"
