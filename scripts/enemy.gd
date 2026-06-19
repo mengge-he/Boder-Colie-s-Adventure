@@ -12,6 +12,7 @@ var health: int = max_health
 var target: Node2D
 var can_deal_contact_damage: bool = true
 var is_dead: bool = false
+var overlapping_damage_bodies: Array[Node2D] = []
 
 @onready var body: Polygon2D = $Body
 @onready var contact_timer: Timer = $ContactTimer
@@ -44,10 +45,27 @@ func take_damage(amount: int) -> void:
 		queue_free()
 
 func _on_hurtbox_body_entered(body_node: Node2D) -> void:
-	if can_deal_contact_damage and body_node.has_method("take_damage"):
-		body_node.take_damage(contact_damage)
-		can_deal_contact_damage = false
-		contact_timer.start()
+	if is_dead or not body_node.has_method("take_damage"):
+		return
+	if not overlapping_damage_bodies.has(body_node):
+		overlapping_damage_bodies.append(body_node)
+	if can_deal_contact_damage:
+		_deal_contact_damage(body_node)
 
 func _on_contact_timer_timeout() -> void:
 	can_deal_contact_damage = true
+	for body_node in overlapping_damage_bodies.duplicate():
+		if not is_instance_valid(body_node) or not body_node.has_method("take_damage"):
+			overlapping_damage_bodies.erase(body_node)
+			continue
+		_deal_contact_damage(body_node)
+
+func _on_hurtbox_body_exited(body_node: Node2D) -> void:
+	overlapping_damage_bodies.erase(body_node)
+
+func _deal_contact_damage(body_node: Node2D) -> void:
+	if is_dead:
+		return
+	body_node.take_damage(contact_damage)
+	can_deal_contact_damage = false
+	contact_timer.start()

@@ -1,5 +1,15 @@
 extends SceneTree
 
+class DamageTarget:
+	extends Node2D
+
+	var health: int = 3
+	var damage_count: int = 0
+
+	func take_damage(amount: int) -> void:
+		health -= amount
+		damage_count += 1
+
 var failures: Array[String] = []
 
 func _init() -> void:
@@ -10,6 +20,7 @@ func _init() -> void:
 	await _test_player_clamps_to_arena()
 	await _test_player_damage_uses_invulnerability()
 	await _test_enemy_moves_toward_player()
+	await _test_enemy_reapplies_contact_damage_after_cooldown()
 	await _test_enemy_damage_and_death_signal()
 	_finish()
 
@@ -73,6 +84,24 @@ func _test_enemy_moves_toward_player() -> void:
 	if enemy.velocity.x <= 0:
 		failures.append("Enemy should move toward positive X, velocity was %s" % enemy.velocity)
 	enemy.target.queue_free()
+	enemy.queue_free()
+	await process_frame
+
+func _test_enemy_reapplies_contact_damage_after_cooldown() -> void:
+	var enemy_scene = load("res://scenes/enemy.tscn")
+	if enemy_scene == null:
+		failures.append("Cannot load enemy scene")
+		return
+	var enemy = enemy_scene.instantiate()
+	root.add_child(enemy)
+	var target := DamageTarget.new()
+	root.add_child(target)
+	enemy.contact_damage = 1
+	enemy._on_hurtbox_body_entered(target)
+	enemy._on_contact_timer_timeout()
+	if target.damage_count != 2 or target.health != 1:
+		failures.append("Enemy sustained contact should deal damage twice after cooldown, got %s hits and health %s" % [target.damage_count, target.health])
+	target.queue_free()
 	enemy.queue_free()
 	await process_frame
 

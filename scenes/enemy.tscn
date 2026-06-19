@@ -32,4 +32,5 @@ shape = SubResource("CircleShape2D_enemy")
 one_shot = true
 
 [connection signal="body_entered" from="Hurtbox" to="." method="_on_hurtbox_body_entered"]
+[connection signal="body_exited" from="Hurtbox" to="." method="_on_hurtbox_body_exited"]
 [connection signal="timeout" from="ContactTimer" to="." method="_on_contact_timer_timeout"]
