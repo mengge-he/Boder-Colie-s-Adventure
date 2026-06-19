@@ -18,10 +18,16 @@
 
 ## 验证
 
-命令行可用 Godot 时运行：
+如果 `godot` 已加入 PATH，可运行：
 
 ```powershell
 godot --headless --script scripts/test_runner.gd
+```
+
+如果当前 shell 无法解析 `godot`，可使用本机已知 Godot console exe 路径运行：
+
+```powershell
+& 'C:\Users\Crimson\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7-stable_win64_console.exe' --headless --script scripts/test_runner.gd
 ```
 
 期望输出包含：
@@ -29,6 +35,22 @@ godot --headless --script scripts/test_runner.gd
 ```text
 TESTS PASSED
 ```
+
+主场景 headless smoke 可运行：
+
+```powershell
+& 'C:\Users\Crimson\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7-stable_win64_console.exe' --headless --path . --scene res://scenes/main.tscn --quit-after 2
+```
+
+期望命令退出码为 0。
+
+## 验收记录
+
+2026-06-19：
+
+- 自动化测试：运行 `& 'C:\Users\Crimson\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7-stable_win64_console.exe' --headless --script scripts/test_runner.gd`，结果通过，输出包含 `TESTS PASSED`。
+- 主场景 headless smoke：运行 `& 'C:\Users\Crimson\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7-stable_win64_console.exe' --headless --path . --scene res://scenes/main.tscn --quit-after 2`，结果通过，退出码为 0。
+- 可见/手动游玩：非交互式 agent 环境未执行可见窗口手动游玩验收。
 
 ## 调试辅助层
 
